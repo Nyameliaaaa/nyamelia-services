@@ -1,0 +1,20 @@
+{
+	"name": "nyamelia-services",
+	"type": "module",
+	"scripts": {
+		"dev": "wrangler dev",
+		"deploy": "wrangler deploy --minify",
+		"cf-typegen": "wrangler types --env-interface Bindings",
+		"studio:l": "drizzle-kit studio --config drizzle.local.config.ts"
+	},
+	"dependencies": {
+		"drizzle-orm": "^0.45.2",
+		"hono": "^4.12.15"
+	},
+	"devDependencies": {
+		"@libsql/client": "^0.17.3",
+		"@types/node": "^25.6.0",
+		"drizzle-kit": "^0.31.10",
+		"wrangler": "^4.4.0"
+	}
+}
