@@ -4,6 +4,7 @@ import { guestbook_entries } from './db/schema';
 import { cors } from 'hono/cors';
 
 const app = new Hono<{ Bindings: Bindings }>();
+app.use('*', cors());
 
 function isValidEmail(email: string) {
     const pattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -69,5 +70,4 @@ app.onError((err, c) => {
     });
 });
 
-app.use('*', cors());
 export default app;
