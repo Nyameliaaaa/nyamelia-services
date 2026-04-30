@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import { createDb } from './db/index';
 import { guestbook_entries } from './db/schema';
 import { cors } from 'hono/cors';
+import { desc } from 'drizzle-orm';
 
 const app = new Hono<{ Bindings: Bindings }>();
 app.use('*', cors());
@@ -19,7 +20,8 @@ app.get('/api/guestbook', async c => {
             message: guestbook_entries.message,
             createdAt: guestbook_entries.createdAt
         })
-        .from(guestbook_entries);
+        .from(guestbook_entries)
+        .orderBy(desc(guestbook_entries.createdAt));
 
     return c.json({
         entries: entries.map(e => ({
