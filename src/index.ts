@@ -87,7 +87,8 @@ app.get('/api/lastfm/recent', async c => {
         name: t.name,
         artist: t.artist['#text'],
         album: t.album['#text'],
-        image: t.image.find((i: any) => i.size === 'extralarge')?.['#text']
+        image: t.image.find((i: any) => i.size === 'extralarge')?.['#text'],
+        url: t.url
     }));
 
     return c.json(clean);
@@ -103,7 +104,8 @@ app.get('/api/lastfm/artists', async c => {
 
     const clean = data.topartists.artist.map((a: any) => ({
         name: a.name,
-        image: a.image.find((i: any) => i.size === 'mega')?.['#text']
+        image: a.image.find((i: any) => i.size === 'extralarge')?.['#text'],
+        url: a.url
     }));
 
     return c.json(clean);
@@ -121,7 +123,8 @@ app.get('/api/lastfm/albums', async c => {
         name: a.name,
         artist: a.artist.name,
         playcount: a.playcount,
-        image: a.image.find((i: any) => i.size === 'extralarge')?.['#text']
+        image: a.image.find((i: any) => i.size === 'extralarge')?.['#text'],
+        url: a.url
     }));
 
     return c.json(clean);
