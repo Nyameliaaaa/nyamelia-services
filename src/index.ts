@@ -1,8 +1,9 @@
+import { desc } from 'drizzle-orm';
 import { Hono } from 'hono';
+import { cors } from 'hono/cors';
 import { createDb } from './db/index';
 import { guestbook_entries } from './db/schema';
-import { cors } from 'hono/cors';
-import { desc } from 'drizzle-orm';
+import { cachedFetch, getAlbumImage, getTrackImage, LASTFM_BASE, LASTFM_USER } from './lastFM';
 
 const app = new Hono<{ Bindings: Env }>();
 app.use('*', cors());
@@ -63,18 +64,6 @@ app.post('/api/guestbook', async c => {
     return c.json({ inserted: true });
 });
 
-async function cachedFetch(kv: KVNamespace, key: string, url: string, ttl: number) {
-    const cached = await kv.get(key);
-    if (cached) return JSON.parse(cached);
-
-    const data = await fetch(url).then(r => r.json());
-    await kv.put(key, JSON.stringify(data), { expirationTtl: ttl });
-    return data;
-}
-
-const LASTFM_BASE = 'https://ws.audioscrobbler.com/2.0';
-const LASTFM_USER = 'nyamelia';
-
 app.get('/api/lastfm/recent', async c => {
     const data = await cachedFetch(
         c.env.lastfm_cache,
@@ -83,13 +72,22 @@ app.get('/api/lastfm/recent', async c => {
         300
     );
 
-    const clean = data.recenttracks.track.map((t: any) => ({
-        name: t.name,
-        artist: t.artist['#text'],
-        album: t.album['#text'],
-        image: t.image.find((i: any) => i.size === 'extralarge')?.['#text'],
-        url: t.url
-    }));
+    const clean: any[] = [];
+
+    for (const track of data.recenttracks.track) {
+        clean.push({
+            name: track.name,
+            artist: track.artist['#text'],
+            album: track.album['#text'],
+            image: await getTrackImage(
+                track.artist['#text'],
+                track.name,
+                track.image.find((i: any) => i.size === 'extralarge')?.['#text'],
+                c
+            ),
+            url: track.url
+        });
+    }
 
     return c.json(clean);
 });
@@ -104,7 +102,6 @@ app.get('/api/lastfm/artists', async c => {
 
     const clean = data.topartists.artist.map((a: any) => ({
         name: a.name,
-        image: a.image.find((i: any) => i.size === 'extralarge')?.['#text'],
         url: a.url
     }));
 
@@ -119,13 +116,22 @@ app.get('/api/lastfm/albums', async c => {
         3600
     );
 
-    const clean = data.topalbums.album.map((a: any) => ({
-        name: a.name,
-        artist: a.artist.name,
-        playcount: a.playcount,
-        image: a.image.find((i: any) => i.size === 'extralarge')?.['#text'],
-        url: a.url
-    }));
+    const clean: any[] = [];
+
+    for (const a of data.topalbums.album) {
+        clean.push({
+            name: a.name,
+            artist: a.artist.name,
+            playcount: a.playcount,
+            image: await getAlbumImage(
+                a.artist.name,
+                a.name,
+                a.image.find((i: any) => i.size === 'extralarge')?.['#text'],
+                c
+            ),
+            url: a.url
+        });
+    }
 
     return c.json(clean);
 });
