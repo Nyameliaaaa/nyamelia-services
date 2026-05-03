@@ -53,12 +53,12 @@ app.get('/api/guestbook', async c => {
         .from(guestbook_entries)
         .orderBy(desc(guestbook_entries.createdAt));
 
-    return c.json({
-        entries: entries.map(e => ({
+    return c.json(
+        entries.map(e => ({
             ...e,
             createdAt: e.createdAt?.toISOString()
         }))
-    });
+    );
 });
 
 app.post('/api/guestbook', async c => {
