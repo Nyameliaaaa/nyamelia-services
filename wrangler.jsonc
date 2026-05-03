@@ -13,8 +13,8 @@
     ],
     "kv_namespaces": [
         {
-			"binding": "lastfm_cache",
-            "id": "6a13a1b9e26044c0a5ce5c1dc4960fad",
+            "binding": "lastfm_cache",
+            "id": "6a13a1b9e26044c0a5ce5c1dc4960fad"
         }
     ]
     // "compatibility_flags": [
