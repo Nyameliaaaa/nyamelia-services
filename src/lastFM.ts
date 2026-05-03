@@ -53,11 +53,11 @@ const getImage = async (artist: string, release: string, lastfmImage: string | n
 };
 
 export const getTrackImage = async (artist: string, track: string, lastfmImage: string | null) => {
-    await getImage(artist, track, lastfmImage, 'mb:track');
+    return await getImage(artist, track, lastfmImage, 'mb:track');
 };
 
 export const getAlbumImage = async (artist: string, album: string, lastfmImage: string | null) => {
-    await getImage(artist, album, lastfmImage, 'mb:album');
+    return await getImage(artist, album, lastfmImage, 'mb:album');
 };
 
 export const LASTFM_BASE = 'https://ws.audioscrobbler.com/2.0';
