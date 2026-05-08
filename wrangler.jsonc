@@ -16,7 +16,11 @@
             "binding": "lastfm_cache",
             "id": "6a13a1b9e26044c0a5ce5c1dc4960fad"
         }
-    ]
+    ],
+    "queues": {
+        "producers": [{ "queue": "discord-send", "binding": "DISCORD_SEND_QUEUE" }],
+        "consumers": [{ "queue": "discord-send" }]
+    }
     // "compatibility_flags": [
     //   "nodejs_compat"
     // ],

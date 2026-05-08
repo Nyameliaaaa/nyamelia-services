@@ -1,3 +1,5 @@
+import { schema } from '@/db';
+
 export const getOrigin = (origin: string) => {
     if (!origin) {
         return null;
@@ -20,20 +22,3 @@ export const isValidEmail = (email: string) => {
     const pattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return pattern.test(email);
 };
-
-export const CATPPUCCIN_MACCHIATO_COLORS = [
-    'rosewater',
-    'flamingo',
-    'pink',
-    'mauve',
-    'red',
-    'maroon',
-    'peach',
-    'yellow',
-    'green',
-    'teal',
-    'sky',
-    'sapphire',
-    'blue',
-    'lavender'
-];

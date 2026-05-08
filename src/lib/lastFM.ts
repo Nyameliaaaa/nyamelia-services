@@ -1,12 +1,5 @@
 import { env } from 'cloudflare:workers';
-
-const LASTFM_PLACEHOLDER_HASH = '2a96cbd8b46e442fc41c2b86b821562f';
-
-export const TTL = {
-    MUSICBRAINZ_MBID: 7 * 24 * 60 * 60, // 1 week,
-    LASTFM_RECENT: 5 * 60, // 5 minutes
-    LASTFM_TOP: 1 * 60 * 60 // 1 hour
-};
+import { LASTFM_PLACEHOLDER_HASH, TTL } from './consts';
 
 export const cachedFetch = async (kv: KVNamespace, key: string, url: string, ttl: number) => {
     const cached = await kv.get(key);
@@ -59,6 +52,3 @@ export const getTrackImage = async (artist: string, track: string, lastfmImage: 
 export const getAlbumImage = async (artist: string, album: string, lastfmImage: string | null) => {
     return await getImage(artist, album, lastfmImage, 'mb:album');
 };
-
-export const LASTFM_BASE = 'https://ws.audioscrobbler.com/2.0';
-export const LASTFM_USER = 'nyamelia';
