@@ -31,49 +31,6 @@ guestbook.get('/', async c => {
     );
 });
 
-guestbook.get('/:id', async c => {
-    const _id = c.req.param('id');
-
-    if (!Number.isFinite(Number(_id))) {
-        c.status(422);
-
-        return c.json({
-            error: 'INVALID_ID',
-            description: 'The ID is not a number'
-        });
-    }
-
-    const id = Number(_id);
-
-    const entry = await db
-        .selectDistinct({
-            id: guestbookEntries.id,
-            name: guestbookEntries.name,
-            message: guestbookEntries.message,
-            createdAt: guestbookEntries.createdAt,
-            borderColor: guestbookEntries.borderColor,
-            url: guestbookEntries.url
-        })
-        .from(guestbookEntries)
-        .where(eq(guestbookEntries.id, id));
-
-    if (!entry.length) {
-        c.status(404);
-
-        return c.json({
-            error: 'ENTRY_NOT_FOUND',
-            description: 'That entry does not exist'
-        });
-    }
-
-    return c.json(
-        entry.map(e => ({
-            ...e,
-            createdAt: e.createdAt?.toISOString()
-        }))[0]
-    );
-});
-
 guestbook.post('/', async c => {
     const body = await c.req.json<{
         name?: string;
@@ -137,7 +94,50 @@ guestbook.post('/', async c => {
     return c.json({ success: true, id: entry.id });
 });
 
-guestbook.post('/report/:id', async c => {
+guestbook.get('/:id', async c => {
+    const _id = c.req.param('id');
+
+    if (!Number.isFinite(Number(_id))) {
+        c.status(422);
+
+        return c.json({
+            error: 'INVALID_ID',
+            description: 'The ID is not a number'
+        });
+    }
+
+    const id = Number(_id);
+
+    const entry = await db
+        .selectDistinct({
+            id: guestbookEntries.id,
+            name: guestbookEntries.name,
+            message: guestbookEntries.message,
+            createdAt: guestbookEntries.createdAt,
+            borderColor: guestbookEntries.borderColor,
+            url: guestbookEntries.url
+        })
+        .from(guestbookEntries)
+        .where(eq(guestbookEntries.id, id));
+
+    if (!entry.length) {
+        c.status(404);
+
+        return c.json({
+            error: 'ENTRY_NOT_FOUND',
+            description: 'That entry does not exist'
+        });
+    }
+
+    return c.json(
+        entry.map(e => ({
+            ...e,
+            createdAt: e.createdAt?.toISOString()
+        }))[0]
+    );
+});
+
+guestbook.post('/:id/report', async c => {
     const _id = c.req.param('id');
 
     const body = await c.req.json<ReportPacket>();
