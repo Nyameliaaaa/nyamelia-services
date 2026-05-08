@@ -6,16 +6,17 @@ export enum QueuedMessageType {
     ContactMessage
 }
 
-type _GuestbookEntry = typeof schema.guestbookEntries.$inferInsert;
+type GuestbookEntry = typeof schema.guestbookEntries.$inferInsert;
 
 export interface QueuedMessage {
     type: QueuedMessageType;
+    workerUrl?: string;
 }
 
-export type GuestbookEntryPacket = _GuestbookEntry & QueuedMessage;
+export type GuestbookEntryPacket = GuestbookEntry & QueuedMessage;
 export interface ReportPacket extends QueuedMessage {
-    reportMessage: string;
-    id?: number;
+    message: string;
+    offendingEntry: GuestbookEntry;
 }
 
 export interface ContactPacket extends QueuedMessage {
@@ -32,6 +33,6 @@ export const isReport = (data: QueuedMessage): data is ReportPacket => {
     return data.type === QueuedMessageType.Report;
 };
 
-export const isContact = (data: QueuedMessage): data is ReportPacket => {
+export const isContact = (data: QueuedMessage): data is ContactPacket => {
     return data.type === QueuedMessageType.ContactMessage;
 };

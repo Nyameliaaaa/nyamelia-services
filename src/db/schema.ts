@@ -10,5 +10,6 @@ export const guestbookEntries = sqliteTable('guestbook_entries', {
         .default(sql`(unixepoch())`),
     email: text('email'),
     url: text('url'),
-    borderColor: text('border_color')
+    borderColor: text('border_color'),
+    ameliaReply: text('amelia_reply')
 });

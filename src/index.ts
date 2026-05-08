@@ -3,9 +3,10 @@ import { cors } from 'hono/cors';
 import { getOrigin } from '@/lib/helpers';
 import guestbook from '@/routes/guestbook';
 import lastFM from '@/routes/lastFM';
+import message from '@/routes/message';
 import { queue } from '@/queue';
 
-const app = new Hono<{ Bindings: Env }>();
+const app = new Hono<{ Bindings: Bindings }>();
 app.use(
     '*',
     cors({
@@ -17,6 +18,7 @@ app.use(
 
 app.route('/api/guestbook', guestbook);
 app.route('/api/lastfm', lastFM);
+app.route('/api/message', message);
 
 app.onError((err, c) => {
     console.error(`${err}`);

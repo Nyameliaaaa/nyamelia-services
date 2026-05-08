@@ -1,27 +1,18 @@
 import { createDb, schema } from '@/db';
 import { CATPPUCCIN_MACCHIATO_COLORS } from '@/lib/consts';
-import { isValidEmail } from '@/lib/helpers';
-import { ReportPacket } from '@/lib/types';
+import { sendDiscordPacket, isValidEmail } from '@/lib/helpers';
+import { GuestbookEntryPacket, QueuedMessageType, ReportPacket } from '@/lib/types';
 import { env } from 'cloudflare:workers';
-import { desc, eq } from 'drizzle-orm';
+import { desc, eq, getTableColumns } from 'drizzle-orm';
 import { Hono } from 'hono';
 
-const guestbook = new Hono<{ Bindings: Env }>();
-const db = createDb(env.nyamelia_services);
+const guestbook = new Hono<{ Bindings: Bindings }>();
+const db = createDb(env.NYAMELIA_SERVICES);
 const guestbookEntries = schema.guestbookEntries;
 
 guestbook.get('/', async c => {
-    const entries = await db
-        .select({
-            id: guestbookEntries.id,
-            name: guestbookEntries.name,
-            message: guestbookEntries.message,
-            createdAt: guestbookEntries.createdAt,
-            borderColor: guestbookEntries.borderColor,
-            url: guestbookEntries.url
-        })
-        .from(guestbookEntries)
-        .orderBy(desc(guestbookEntries.createdAt));
+    const { email, ...publicFields } = getTableColumns(guestbookEntries);
+    const entries = await db.select(publicFields).from(guestbookEntries).orderBy(desc(guestbookEntries.createdAt));
 
     return c.json(
         entries.map(e => ({
@@ -86,9 +77,12 @@ guestbook.post('/', async c => {
             name: body.name ?? 'anonymous',
             message: body.message,
             email: body.email,
-            borderColor: body.borderColor ?? 'pink'
+            borderColor: body.borderColor ?? 'pink',
+            ...(body.url && { url: body.url })
         })
-        .returning({ id: guestbookEntries.id });
+        .returning();
+
+    await sendDiscordPacket<GuestbookEntryPacket>(c, { type: QueuedMessageType.GuestbookEntry, ...entry });
 
     c.status(201);
     return c.json({ success: true, id: entry.id });
@@ -107,18 +101,9 @@ guestbook.get('/:id', async c => {
     }
 
     const id = Number(_id);
+    const { email, ...publicFields } = getTableColumns(guestbookEntries);
 
-    const entry = await db
-        .selectDistinct({
-            id: guestbookEntries.id,
-            name: guestbookEntries.name,
-            message: guestbookEntries.message,
-            createdAt: guestbookEntries.createdAt,
-            borderColor: guestbookEntries.borderColor,
-            url: guestbookEntries.url
-        })
-        .from(guestbookEntries)
-        .where(eq(guestbookEntries.id, id));
+    const entry = await db.selectDistinct(publicFields).from(guestbookEntries).where(eq(guestbookEntries.id, id));
 
     if (!entry.length) {
         c.status(404);
@@ -153,12 +138,7 @@ guestbook.post('/:id/report', async c => {
 
     const id = Number(_id);
 
-    const entry = await db
-        .selectDistinct({
-            id: guestbookEntries.id
-        })
-        .from(guestbookEntries)
-        .where(eq(guestbookEntries.id, id));
+    const entry = await db.selectDistinct().from(guestbookEntries).where(eq(guestbookEntries.id, id));
 
     if (!entry.length) {
         c.status(404);
@@ -169,7 +149,13 @@ guestbook.post('/:id/report', async c => {
         });
     }
 
-    // send to discord
+    console.log(body.message);
+
+    await sendDiscordPacket<ReportPacket>(c, {
+        type: QueuedMessageType.Report,
+        offendingEntry: entry[0],
+        message: body.message
+    });
 
     return c.json({ success: true, id });
 });

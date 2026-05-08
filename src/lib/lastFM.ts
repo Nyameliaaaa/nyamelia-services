@@ -1,5 +1,5 @@
 import { env } from 'cloudflare:workers';
-import { LASTFM_PLACEHOLDER_HASH, TTL } from './consts';
+import { LASTFM_PLACEHOLDER_HASH, TTL } from '@/lib/consts';
 
 export const cachedFetch = async (kv: KVNamespace, key: string, url: string, ttl: number) => {
     const cached = await kv.get(key);
@@ -31,7 +31,7 @@ const getImage = async (artist: string, release: string, lastfmImage: string | n
     }
 
     const mbData = await cachedFetch(
-        env.lastfm_cache,
+        env.LASTFM_CACHE,
         await cacheKey(key, artist, release),
         `https://musicbrainz.org/ws/2/release/?query=artist:${encodeURIComponent(artist)}+release:${encodeURIComponent(release)}&fmt=json&limit=1`,
         TTL.MUSICBRAINZ_MBID

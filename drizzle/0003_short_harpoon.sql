@@ -1,0 +1,1 @@
+ALTER TABLE `guestbook_entries` ADD `amelia_reply` text;
