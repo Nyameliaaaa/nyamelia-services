@@ -3,7 +3,7 @@ import { cors } from 'hono/cors';
 import { getOrigin } from '@/lib/helpers';
 import guestbook from '@/routes/guestbook';
 import lastFM from '@/routes/lastFM';
-export { queue } from '@/queue';
+import { queue } from '@/queue';
 
 const app = new Hono<{ Bindings: Env }>();
 app.use(
@@ -27,4 +27,7 @@ app.onError((err, c) => {
     });
 });
 
-export default app;
+export default {
+    fetch: app.fetch,
+    queue
+};
