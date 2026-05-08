@@ -2,56 +2,35 @@ import { desc } from 'drizzle-orm';
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { createDb } from './db/index';
-import { guestbook_entries } from './db/schema';
+import { guestbookEntries } from './db/schema';
 import { cachedFetch, getAlbumImage, getTrackImage, LASTFM_BASE, LASTFM_USER, TTL } from './lastFM';
 import { env } from 'cloudflare:workers';
+import { CATPPUCCIN_MACCHIATO_COLORS, getOrigin, isValidEmail } from './helpers';
 
 const app = new Hono<{ Bindings: Env }>();
 app.use(
     '*',
     cors({
-        origin: origin => {
-            if (!origin) {
-                return null;
-            }
-
-            const allowed = [
-                'http://localhost:4321',
-                'https://nyamelia.pages.dev',
-                'https://nyamelia.is-immensely.gay'
-            ];
-
-            if (allowed.includes(origin)) {
-                return origin;
-            }
-
-            if (/^https:\/\/[a-z0-9-]+\.nyamelia\.pages\.dev$/.test(origin)) {
-                return origin;
-            }
-
-            return null;
-        },
+        origin: getOrigin,
         allowMethods: ['GET', 'POST', 'OPTIONS'],
         allowHeaders: ['Content-Type']
     })
 );
-
-function isValidEmail(email: string) {
-    const pattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return pattern.test(email);
-}
 
 const db = createDb(env.nyamelia_services);
 
 app.get('/api/guestbook', async c => {
     const entries = await db
         .select({
-            name: guestbook_entries.name,
-            message: guestbook_entries.message,
-            createdAt: guestbook_entries.createdAt
+            id: guestbookEntries.id,
+            name: guestbookEntries.name,
+            message: guestbookEntries.message,
+            createdAt: guestbookEntries.createdAt,
+            borderColor: guestbookEntries.borderColor,
+            url: guestbookEntries.url
         })
-        .from(guestbook_entries)
-        .orderBy(desc(guestbook_entries.createdAt));
+        .from(guestbookEntries)
+        .orderBy(desc(guestbookEntries.createdAt));
 
     return c.json(
         entries.map(e => ({
@@ -66,9 +45,13 @@ app.post('/api/guestbook', async c => {
         name?: string;
         message: string;
         email?: string;
+        borderColor?: string;
+        url?: string;
     }>();
 
     if (!body.message) {
+        c.status(422);
+
         return c.json({
             error: 'NO_MESSAGE',
             description: 'A message is required in the guestbook'
@@ -76,16 +59,41 @@ app.post('/api/guestbook', async c => {
     }
 
     if (body.email && !isValidEmail(body.email)) {
+        c.status(422);
+
         return c.json({
             error: 'INVALID_EMAIL',
             description: 'The email is not a valid email'
         });
     }
 
-    await db.insert(guestbook_entries).values({
+    if (body.url) {
+        try {
+            new URL(body.url);
+        } catch {
+            c.status(422);
+
+            return c.json({
+                error: 'INVALID_URL',
+                description: 'The URL is not a valid URL'
+            });
+        }
+    }
+
+    if (body.borderColor && !CATPPUCCIN_MACCHIATO_COLORS.includes(body.borderColor)) {
+        c.status(422);
+
+        return c.json({
+            error: 'INVALID_COLOR',
+            description: 'The border color is not a valid Catppuccin Macchiato color'
+        });
+    }
+
+    await db.insert(guestbookEntries).values({
         name: body.name ?? 'anonymous',
         message: body.message,
-        email: body.email
+        email: body.email,
+        borderColor: body.borderColor ?? 'pink'
     });
 
     return c.json({ inserted: true });
