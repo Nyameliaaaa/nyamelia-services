@@ -149,8 +149,6 @@ guestbook.post('/:id/report', async c => {
         });
     }
 
-    console.log(body.message);
-
     await sendDiscordPacket<ReportPacket>(c, {
         type: QueuedMessageType.Report,
         offendingEntry: entry[0],

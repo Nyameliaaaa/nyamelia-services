@@ -1,11 +1,11 @@
 import { isValidEmail, sendDiscordPacket } from '@/lib/helpers';
-import { ContactPacket, QueuedMessageType } from '@/lib/types';
+import { MessagePacket, QueuedMessageType } from '@/lib/types';
 import { Hono } from 'hono';
 
 const message = new Hono<{ Bindings: Bindings }>();
 
 message.post('/', async c => {
-    const body = await c.req.json<ContactPacket>();
+    const body = await c.req.json<MessagePacket>();
 
     if (!body.name) {
         c.status(422);
@@ -43,7 +43,7 @@ message.post('/', async c => {
         });
     }
 
-    await sendDiscordPacket<ContactPacket>(c, { ...body, type: QueuedMessageType.ContactMessage });
+    await sendDiscordPacket<MessagePacket>(c, { ...body, type: QueuedMessageType.Message });
 
     c.status(201);
     return c.json({ success: true });
@@ -51,7 +51,6 @@ message.post('/', async c => {
 
 message.get('/mail', async c => {
     const email = c.req.query('to');
-    console.log(email);
 
     if (!email) {
         c.status(422);

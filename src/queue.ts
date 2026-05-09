@@ -1,4 +1,4 @@
-import { isContact, isGuestbookEntry, isReport, QueuedMessage } from '@/lib/types';
+import { isMessage, isGuestbookEntry, isReport, QueuedMessage } from '@/lib/types';
 import { ActionRowBuilder, ButtonBuilder, EmbedBuilder } from '@discordjs/builders';
 import { REST } from '@discordjs/rest';
 import { ButtonStyle, Routes } from 'discord-api-types/v10';
@@ -99,7 +99,7 @@ export const queue: ExportedHandlerQueueHandler<Bindings, QueuedMessage> = async
 
             message.ack();
             // !SECTION
-        } else if (isContact(body)) {
+        } else if (isMessage(body)) {
             // SECTION - Contact
             const embed = new EmbedBuilder()
                 .setTitle(body.name)

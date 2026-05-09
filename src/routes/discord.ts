@@ -117,7 +117,8 @@ discord.post('/', discordVerify(env.DISCORD_PUBLIC_KEY), async c => {
                             }
                         });
                     } catch (e) {
-                        console.log(e);
+                        console.error(e);
+
                         return c.json({
                             type: InteractionResponseType.ChannelMessageWithSource,
                             data: {

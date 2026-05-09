@@ -3,7 +3,7 @@ import { schema } from '@/db';
 export enum QueuedMessageType {
     Report,
     GuestbookEntry,
-    ContactMessage
+    Message
 }
 
 type GuestbookEntry = typeof schema.guestbookEntries.$inferInsert;
@@ -19,7 +19,7 @@ export interface ReportPacket extends QueuedMessage {
     offendingEntry: GuestbookEntry;
 }
 
-export interface ContactPacket extends QueuedMessage {
+export interface MessagePacket extends QueuedMessage {
     message: string;
     name: string;
     email: string;
@@ -33,6 +33,6 @@ export const isReport = (data: QueuedMessage): data is ReportPacket => {
     return data.type === QueuedMessageType.Report;
 };
 
-export const isContact = (data: QueuedMessage): data is ContactPacket => {
-    return data.type === QueuedMessageType.ContactMessage;
+export const isMessage = (data: QueuedMessage): data is MessagePacket => {
+    return data.type === QueuedMessageType.Message;
 };
