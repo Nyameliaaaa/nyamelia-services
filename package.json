@@ -4,15 +4,14 @@
 	"scripts": {
 		"dev": "wrangler dev",
 		"deploy": "wrangler deploy --minify",
-		"cf-typegen": "wrangler types --env-interface Bindings",
-		"studio:l": "drizzle-kit studio --config drizzle.local.config.ts"
+		"cf-typegen": "wrangler types --env-interface Bindings"
 	},
 	"dependencies": {
 		"@discordjs/builders": "^1.14.1",
 		"@discordjs/rest": "^2.6.1",
-		"discord-interactions": "^4.4.0",
 		"drizzle-orm": "^0.45.2",
-		"hono": "^4.12.15"
+		"hono": "^4.12.15",
+		"hono-discord-verify": "^0.4.2"
 	},
 	"devDependencies": {
 		"@libsql/client": "^0.17.3",

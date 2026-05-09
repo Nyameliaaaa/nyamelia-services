@@ -7,6 +7,7 @@ import { ActionRowBuilder, ButtonBuilder, EmbedBuilder } from '@discordjs/builde
 export const queue: ExportedHandlerQueueHandler<Bindings, QueuedMessage> = async (batch, env) => {
     const rest = new REST({ version: '10' }).setToken(env.DISCORD_TOKEN);
     for (const message of batch.messages) {
+        // SECTION - Guestbook Entry
         if (isGuestbookEntry(message.body)) {
             const embed = new EmbedBuilder()
                 .setTitle(message.body.name)
@@ -17,11 +18,11 @@ export const queue: ExportedHandlerQueueHandler<Bindings, QueuedMessage> = async
 
             const actionRow = new ActionRowBuilder().addComponents([
                 new ButtonBuilder()
-                    .setCustomId(`newGuestbookEntry:reply:${message.body.id}`)
+                    .setCustomId(`guestbookEntry:reply:${message.body.id}`)
                     .setLabel('reply')
                     .setStyle(ButtonStyle.Primary),
                 new ButtonBuilder()
-                    .setCustomId(`newGuestbookEntry:delete:${message.body.id}`)
+                    .setCustomId(`guestbookEntry:delete:${message.body.id}`)
                     .setLabel('delete')
                     .setStyle(ButtonStyle.Danger)
             ]);
@@ -48,13 +49,14 @@ export const queue: ExportedHandlerQueueHandler<Bindings, QueuedMessage> = async
             await rest.post(Routes.channelMessages(NEW_GUESTBOOK_ENTRY_CHANNEL_ID), {
                 body: { embeds: [embed], components: [actionRow] }
             });
-            message.ack();
-        }
 
-        if (isReport(message.body)) {
+            message.ack();
+            // !SECTION
+        } else if (isReport(message.body)) {
+            // SECTION - Report
             const embed = new EmbedBuilder()
                 .setTitle('new report')
-                .setDescription(`${message.body.message ?? 'something ate shit and the reason is not given now'}`)
+                .setDescription(`${message.body.message}`)
                 .addFields([
                     { name: 'name', value: message.body.offendingEntry.name },
                     { name: 'message', value: message.body.offendingEntry.message }
@@ -64,7 +66,7 @@ export const queue: ExportedHandlerQueueHandler<Bindings, QueuedMessage> = async
 
             const actionRow = new ActionRowBuilder().addComponents([
                 new ButtonBuilder()
-                    .setCustomId(`newGuestbookEntry:delete:${message.body.offendingEntry.id}`)
+                    .setCustomId(`guestbookEntry:delete:${message.body.offendingEntry.id}`)
                     .setLabel('delete')
                     .setStyle(ButtonStyle.Danger)
             ]);
@@ -94,10 +96,11 @@ export const queue: ExportedHandlerQueueHandler<Bindings, QueuedMessage> = async
             await rest.post(Routes.channelMessages(REPORT_CHANNEL_ID), {
                 body: { embeds: [embed], components: [actionRow] }
             });
-            message.ack();
-        }
 
-        if (isContact(message.body)) {
+            message.ack();
+            // !SECTION
+        } else if (isContact(message.body)) {
+            // SECTION - Contact
             const embed = new EmbedBuilder()
                 .setTitle(message.body.name)
                 .setDescription(message.body.message)
@@ -114,7 +117,9 @@ export const queue: ExportedHandlerQueueHandler<Bindings, QueuedMessage> = async
             await rest.post(Routes.channelMessages(CONTACT_CHANNEL_ID), {
                 body: { embeds: [embed], components: [actionRow] }
             });
+
             message.ack();
+            // !SECTION
         }
     }
 };

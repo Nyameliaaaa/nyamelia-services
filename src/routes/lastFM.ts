@@ -19,7 +19,7 @@ lastFM.get('/recent', async c => {
             album: track.album['#text'],
             image: await getTrackImage(
                 track.artist['#text'],
-                track.name,
+                track.album['#text'] ?? track.name,
                 track.image.find((i: any) => i.size === 'extralarge')?.['#text']
             ),
             url: track.url
