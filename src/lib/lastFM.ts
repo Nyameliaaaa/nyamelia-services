@@ -1,5 +1,5 @@
-import { env } from 'cloudflare:workers';
 import { LASTFM_PLACEHOLDER_HASH, TTL } from '@/lib/consts';
+import { env } from 'cloudflare:workers';
 
 export const cachedFetch = async (kv: KVNamespace, key: string, url: string, ttl: number) => {
     const cached = await kv.get(key);

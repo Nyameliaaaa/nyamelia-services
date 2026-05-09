@@ -1,48 +1,49 @@
 import { isContact, isGuestbookEntry, isReport, QueuedMessage } from '@/lib/types';
+import { ActionRowBuilder, ButtonBuilder, EmbedBuilder } from '@discordjs/builders';
 import { REST } from '@discordjs/rest';
 import { ButtonStyle, Routes } from 'discord-api-types/v10';
 import { COLOR_VALUES, CONTACT_CHANNEL_ID, NEW_GUESTBOOK_ENTRY_CHANNEL_ID, REPORT_CHANNEL_ID } from './lib/consts';
-import { ActionRowBuilder, ButtonBuilder, EmbedBuilder } from '@discordjs/builders';
 
 export const queue: ExportedHandlerQueueHandler<Bindings, QueuedMessage> = async (batch, env) => {
     const rest = new REST({ version: '10' }).setToken(env.DISCORD_TOKEN);
     for (const message of batch.messages) {
+        const { body } = message;
         // SECTION - Guestbook Entry
-        if (isGuestbookEntry(message.body)) {
+        if (isGuestbookEntry(body)) {
             const embed = new EmbedBuilder()
-                .setTitle(message.body.name)
-                .setDescription(message.body.message)
+                .setTitle(body.name)
+                .setDescription(body.message)
                 .setAuthor({ name: 'new guestbook entry :3' })
-                .setFooter({ text: `#${message.body.id}` })
-                .setColor(COLOR_VALUES[message.body.borderColor ?? 'pink']);
+                .setFooter({ text: `#${body.id}` })
+                .setColor(COLOR_VALUES[body.borderColor ?? 'pink']);
 
             const actionRow = new ActionRowBuilder().addComponents([
                 new ButtonBuilder()
-                    .setCustomId(`guestbookEntry:reply:${message.body.id}`)
+                    .setCustomId(`guestbookEntry:reply:${body.id}`)
                     .setLabel('reply')
                     .setStyle(ButtonStyle.Primary),
                 new ButtonBuilder()
-                    .setCustomId(`guestbookEntry:delete:${message.body.id}`)
+                    .setCustomId(`guestbookEntry:delete:${body.id}`)
                     .setLabel('delete')
                     .setStyle(ButtonStyle.Danger)
             ]);
 
-            if (message.body.url) {
-                embed.addFields([{ name: 'url', value: message.body.url }]);
+            if (body.url) {
+                embed.addFields([{ name: 'url', value: body.url }]);
 
                 actionRow.addComponents([
-                    new ButtonBuilder().setLabel('site').setStyle(ButtonStyle.Link).setURL(message.body.url)
+                    new ButtonBuilder().setLabel('site').setStyle(ButtonStyle.Link).setURL(body.url)
                 ]);
             }
 
-            if (message.body.email) {
-                embed.addFields([{ name: 'email', value: message.body.email }]);
+            if (body.email) {
+                embed.addFields([{ name: 'email', value: body.email }]);
 
                 actionRow.addComponents([
                     new ButtonBuilder()
                         .setLabel('mail')
                         .setStyle(ButtonStyle.Link)
-                        .setURL(`${message.body.workerUrl}/api/message/mail?to=${message.body.email}`)
+                        .setURL(`${body.workerUrl}/api/message/mail?to=${body.email}`)
                 ]);
             }
 
@@ -52,44 +53,43 @@ export const queue: ExportedHandlerQueueHandler<Bindings, QueuedMessage> = async
 
             message.ack();
             // !SECTION
-        } else if (isReport(message.body)) {
+        } else if (isReport(body)) {
             // SECTION - Report
+            const { offendingEntry } = body;
+
             const embed = new EmbedBuilder()
                 .setTitle('new report')
-                .setDescription(`${message.body.message}`)
+                .setDescription(`${body.message}`)
                 .addFields([
-                    { name: 'name', value: message.body.offendingEntry.name },
-                    { name: 'message', value: message.body.offendingEntry.message }
+                    { name: 'name', value: offendingEntry.name },
+                    { name: 'message', value: offendingEntry.message }
                 ])
-                .setFooter({ text: `#${message.body.offendingEntry.id}` })
-                .setColor(COLOR_VALUES[message.body.offendingEntry.borderColor ?? 'pink']);
+                .setFooter({ text: `#${offendingEntry.id}` })
+                .setColor(COLOR_VALUES[offendingEntry.borderColor ?? 'pink']);
 
             const actionRow = new ActionRowBuilder().addComponents([
                 new ButtonBuilder()
-                    .setCustomId(`guestbookEntry:delete:${message.body.offendingEntry.id}`)
+                    .setCustomId(`guestbookEntry:delete:${offendingEntry.id}`)
                     .setLabel('delete')
                     .setStyle(ButtonStyle.Danger)
             ]);
 
-            if (message.body.offendingEntry.url) {
-                embed.addFields([{ name: 'url', value: message.body.offendingEntry.url }]);
+            if (offendingEntry.url) {
+                embed.addFields([{ name: 'url', value: offendingEntry.url }]);
 
                 actionRow.addComponents([
-                    new ButtonBuilder()
-                        .setLabel('site')
-                        .setStyle(ButtonStyle.Link)
-                        .setURL(message.body.offendingEntry.url)
+                    new ButtonBuilder().setLabel('site').setStyle(ButtonStyle.Link).setURL(offendingEntry.url)
                 ]);
             }
 
-            if (message.body.offendingEntry.email) {
-                embed.addFields([{ name: 'email', value: message.body.offendingEntry.email }]);
+            if (offendingEntry.email) {
+                embed.addFields([{ name: 'email', value: offendingEntry.email }]);
 
                 actionRow.addComponents([
                     new ButtonBuilder()
                         .setLabel('mail')
                         .setStyle(ButtonStyle.Link)
-                        .setURL(`${message.body.workerUrl}/api/message/mail?to=${message.body.offendingEntry.email}`)
+                        .setURL(`${body.workerUrl}/api/message/mail?to=${offendingEntry.email}`)
                 ]);
             }
 
@@ -99,19 +99,20 @@ export const queue: ExportedHandlerQueueHandler<Bindings, QueuedMessage> = async
 
             message.ack();
             // !SECTION
-        } else if (isContact(message.body)) {
+        } else if (isContact(body)) {
             // SECTION - Contact
             const embed = new EmbedBuilder()
-                .setTitle(message.body.name)
-                .setDescription(message.body.message)
+                .setTitle(body.name)
+                .setDescription(body.message)
                 .setAuthor({ name: 'new message ^^' })
+                .setFields({ name: 'email', value: body.email })
                 .setColor(COLOR_VALUES.pink);
 
             const actionRow = new ActionRowBuilder().addComponents([
                 new ButtonBuilder()
                     .setLabel('reply')
                     .setStyle(ButtonStyle.Link)
-                    .setURL(`${message.body.workerUrl}/api/message/mail?to=${message.body.email}`)
+                    .setURL(`${body.workerUrl}/api/message/mail?to=${body.email}`)
             ]);
 
             await rest.post(Routes.channelMessages(CONTACT_CHANNEL_ID), {

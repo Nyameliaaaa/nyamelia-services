@@ -20,7 +20,7 @@ app.use(
 app.route('/api/guestbook', guestbook);
 app.route('/api/lastfm', lastFM);
 app.route('/api/message', message);
-app.route('/api/discord', discord)
+app.route('/api/discord', discord);
 
 app.onError((err, c) => {
     console.error(`${err}`);

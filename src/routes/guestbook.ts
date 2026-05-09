@@ -1,6 +1,6 @@
 import { createDb, schema } from '@/db';
 import { CATPPUCCIN_MACCHIATO_COLORS } from '@/lib/consts';
-import { sendDiscordPacket, isValidEmail } from '@/lib/helpers';
+import { isValidEmail, sendDiscordPacket } from '@/lib/helpers';
 import { GuestbookEntryPacket, QueuedMessageType, ReportPacket } from '@/lib/types';
 import { env } from 'cloudflare:workers';
 import { desc, eq, getTableColumns } from 'drizzle-orm';

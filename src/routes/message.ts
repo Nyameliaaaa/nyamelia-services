@@ -1,4 +1,4 @@
-import { sendDiscordPacket, isValidEmail } from '@/lib/helpers';
+import { isValidEmail, sendDiscordPacket } from '@/lib/helpers';
 import { ContactPacket, QueuedMessageType } from '@/lib/types';
 import { Hono } from 'hono';
 
