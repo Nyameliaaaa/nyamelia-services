@@ -4,7 +4,10 @@
 	"scripts": {
 		"dev": "wrangler dev",
 		"deploy": "wrangler deploy --minify",
-		"cf-typegen": "wrangler types --env-interface Bindings"
+		"cf-typegen": "wrangler types --env-interface Bindings",
+		"db:gen": "drizzle-kit generate",
+		"db:apply:local": "npx wrangler d1 migrations apply nyamelia-services --local",
+		"db:apply:remote": "npx wrangler d1 migrations apply nyamelia-services --remote"
 	},
 	"dependencies": {
 		"@discordjs/builders": "^1.14.1",

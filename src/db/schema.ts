@@ -13,3 +13,11 @@ export const guestbookEntries = sqliteTable('guestbook_entries', {
     borderColor: text('border_color'),
     ameliaReply: text('amelia_reply')
 });
+
+export const statuses = sqliteTable('statuses', {
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    text: text('text').notNull(),
+    createdAt: integer('created_at', { mode: 'timestamp' })
+        .notNull()
+        .default(sql`(unixepoch())`)
+});

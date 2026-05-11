@@ -1,0 +1,1 @@
+ALTER TABLE `status` RENAME TO `statuses`;

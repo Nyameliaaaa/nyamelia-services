@@ -4,6 +4,7 @@ import discord from '@/routes/discord';
 import guestbook from '@/routes/guestbook';
 import lastFM from '@/routes/lastFM';
 import message from '@/routes/message';
+import statuses from '@/routes/statuses';
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 
@@ -17,19 +18,21 @@ app.use(
     })
 );
 
-app.route('/api/guestbook', guestbook);
-app.route('/api/lastfm', lastFM);
-app.route('/api/message', message);
-app.route('/api/discord', discord);
-
 app.onError((err, c) => {
-    console.error(`${err}`);
+    console.error(`${err}, ${err.stack}`);
+
     return c.json({
         name: err.name,
         msg: err.message,
         tip: 'Try checking for malformed JSON'
     });
 });
+
+app.route('/api/guestbook', guestbook);
+app.route('/api/lastfm', lastFM);
+app.route('/api/message', message);
+app.route('/api/discord', discord);
+app.route('/api/statuses', statuses);
 
 export default {
     fetch: app.fetch,

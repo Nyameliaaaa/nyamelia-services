@@ -30,19 +30,23 @@ const getImage = async (artist: string, release: string, lastfmImage: string | n
         return lastfmImage;
     }
 
-    const mbData = await cachedFetch(
-        env.LASTFM_CACHE,
-        await cacheKey(key, artist, release),
-        `https://musicbrainz.org/ws/2/release/?query=artist:${encodeURIComponent(artist)}+release:${encodeURIComponent(release)}&fmt=json&limit=1`,
-        TTL.MUSICBRAINZ_MBID
-    );
+    try {
+        const mbData = await cachedFetch(
+            env.LASTFM_CACHE,
+            await cacheKey(key, artist, release),
+            `https://musicbrainz.org/ws/2/release/?query=artist:${encodeURIComponent(artist)}+release:${encodeURIComponent(release)}&fmt=json&limit=1`,
+            TTL.MUSICBRAINZ_MBID
+        );
 
-    const mbid = mbData.releases?.[0]?.id;
-    if (!mbid) {
-        return null;
+        const mbid = mbData.releases?.[0]?.id;
+        if (!mbid) {
+            return null;
+        }
+
+        return `https://coverartarchive.org/release/${mbid}/front`;
+    } catch (e) {
+        return lastfmImage;
     }
-
-    return `https://coverartarchive.org/release/${mbid}/front`;
 };
 
 export const getTrackImage = async (artist: string, track: string, lastfmImage: string | null) => {

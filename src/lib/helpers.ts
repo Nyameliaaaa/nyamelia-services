@@ -3,11 +3,14 @@ import {
     APIActionRowComponent,
     APIButtonComponent,
     APIButtonComponentWithCustomId,
+    APIChatInputApplicationCommandInteraction,
     APIComponentInMessageActionRow,
+    APIInteraction,
     APIMessageTopLevelComponent,
     APIModalSubmissionComponent,
     APIModalSubmitTextInputComponent,
     ComponentType,
+    InteractionType,
     ModalSubmitComponent,
     ModalSubmitLabelComponent
 } from 'discord-api-types/v10';
@@ -65,6 +68,10 @@ export const isButton = (data: APIComponentInMessageActionRow): data is APIButto
 
 export const isButtonWithCustomID = (data: APIComponentInMessageActionRow): data is APIButtonComponentWithCustomId => {
     return data.type === ComponentType.Button && 'custom_id' in data;
+};
+
+export const isSlashCommand = (data: APIInteraction): data is APIChatInputApplicationCommandInteraction => {
+    return data.type === InteractionType.ApplicationCommand;
 };
 
 export const disableDelete = (component: APIMessageTopLevelComponent) => {

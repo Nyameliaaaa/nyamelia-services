@@ -29,6 +29,20 @@
       "when": 1778257191036,
       "tag": "0003_short_harpoon",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1778512882849,
+      "tag": "0004_windy_harrier",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1778513729180,
+      "tag": "0005_perfect_devos",
+      "breakpoints": true
     }
   ]
 }

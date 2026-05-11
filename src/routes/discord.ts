@@ -1,7 +1,7 @@
 import { createDb, schema } from '@/db';
 import { EPHEMERAL } from '@/lib/consts';
-import { disableDelete, isLabel, isTextInput } from '@/lib/helpers';
-import { LabelBuilder, ModalBuilder } from '@discordjs/builders';
+import { disableDelete, isLabel, isSlashCommand, isTextInput } from '@/lib/helpers';
+import { LabelBuilder, ModalBuilder, SlashCommandBuilder } from '@discordjs/builders';
 import { REST } from '@discordjs/rest';
 import { env } from 'cloudflare:workers';
 import {
@@ -11,6 +11,8 @@ import {
 } from 'discord-api-types/utils/v10';
 import {
     APIInteraction,
+    ApplicationIntegrationType,
+    InteractionContextType,
     InteractionResponseType,
     InteractionType,
     Routes,
@@ -23,6 +25,7 @@ import discordVerify from 'hono-discord-verify';
 const discord = new Hono<{ Bindings: Bindings }>();
 const db = createDb(env.NYAMELIA_SERVICES);
 const guestbookEntries = schema.guestbookEntries;
+const statuses = schema.statuses;
 
 discord.post('/', discordVerify(env.DISCORD_PUBLIC_KEY), async c => {
     const body = await c.req.json<APIInteraction>();
@@ -130,10 +133,56 @@ discord.post('/', discordVerify(env.DISCORD_PUBLIC_KEY), async c => {
                 }
             }
         }
+    } else if (isSlashCommand(body)) {
+        const text = body.data?.options?.[0] ?? '';
+
+        if (text && 'value' in text) {
+            await db.insert(statuses).values({ text: text.value.toString() });
+        }
+
+        return c.json({
+            type: InteractionResponseType.ChannelMessageWithSource,
+            data: {
+                flags: EPHEMERAL,
+                content: 'added status :3'
+            }
+        });
     }
 
     c.status(422);
     return c.json({ error: 'WHAT', description: "how'd this happen" });
+});
+
+discord.get('/pushCommands', async c => {
+    const key = c.req.query('key');
+    const appID = c.req.query('id');
+
+    if (key !== c.env.DISCORD_PUBLIC_KEY) {
+        return c.body(null, 403);
+    }
+
+    if (!appID) {
+        return c.body(null, 422);
+    }
+
+    const rest = new REST({ version: '10' }).setToken(c.env.DISCORD_TOKEN);
+
+    const commands = [
+        new SlashCommandBuilder()
+            .setName('status')
+            .setDescription('add a status!')
+            .setContexts(
+                InteractionContextType.BotDM,
+                InteractionContextType.Guild,
+                InteractionContextType.PrivateChannel
+            )
+            .setIntegrationTypes(ApplicationIntegrationType.GuildInstall, ApplicationIntegrationType.UserInstall)
+            .addStringOption(option => option.setName('text').setDescription('the status text :p'))
+    ];
+
+    await rest.put(Routes.applicationCommands(appID), { body: commands });
+
+    return c.body(null, 204);
 });
 
 export default discord;
