@@ -21,11 +21,14 @@ app.use(
 app.onError((err, c) => {
     console.error(`${err}, ${err.stack}`);
 
-    return c.json({
-        name: err.name,
-        msg: err.message,
-        tip: 'Try checking for malformed JSON'
-    });
+    return c.json(
+        {
+            name: err.name,
+            msg: err.message,
+            tip: 'try checking for malformed JSON'
+        },
+        500
+    );
 });
 
 app.route('/api/guestbook', guestbook);

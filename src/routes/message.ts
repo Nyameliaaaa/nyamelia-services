@@ -26,48 +26,50 @@ message.post('/', async c => {
     }
 
     if (!body.email) {
-        c.status(422);
-
-        return c.json({
-            error: 'NO_EMAIL',
-            description: 'An email is required'
-        });
+        return c.json(
+            {
+                error: 'NO_EMAIL',
+                description: 'an email is required'
+            },
+            422
+        );
     }
 
     if (!isValidEmail(body.email)) {
-        c.status(422);
-
-        return c.json({
-            error: 'INVALID_EMAIL',
-            description: 'The email is not a valid email'
-        });
+        return c.json(
+            {
+                error: 'INVALID_EMAIL',
+                description: 'that email is not a valid email'
+            },
+            422
+        );
     }
 
     await sendDiscordPacket<MessagePacket>(c, { ...body, type: QueuedMessageType.Message });
-
-    c.status(201);
-    return c.json({ success: true });
+    return c.json({ success: true }, 201);
 });
 
 message.get('/mail', async c => {
     const email = c.req.query('to');
 
     if (!email) {
-        c.status(422);
-
-        return c.json({
-            error: 'NO_EMAIL',
-            description: 'An email is required'
-        });
+        return c.json(
+            {
+                error: 'NO_EMAIL',
+                description: 'an email is required'
+            },
+            422
+        );
     }
 
     if (!isValidEmail(email)) {
-        c.status(422);
-
-        return c.json({
-            error: 'INVALID_EMAIL',
-            description: 'The email is not a valid email'
-        });
+        return c.json(
+            {
+                error: 'INVALID_EMAIL',
+                description: 'that email is not a valid email'
+            },
+            422
+        );
     }
 
     return c.redirect(`mailto:${email}`);

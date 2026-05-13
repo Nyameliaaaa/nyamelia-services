@@ -14,7 +14,9 @@ statuses.get('/', async c => {
         entries.map(e => ({
             ...e,
             createdAt: e.createdAt.toISOString()
-        }))
+        })),
+        200,
+        { 'Cache-Control': 'public, max-age=120' }
     );
 });
 
@@ -25,7 +27,9 @@ statuses.get('/latest', async c => {
         entry.map(e => ({
             ...e,
             createdAt: e.createdAt.toISOString()
-        }))[0]
+        }))[0],
+        200,
+        { 'Cache-Control': 'public, max-age=120' }
     );
 });
 
@@ -40,22 +44,21 @@ statuses.get('/rss.xml', async c => {
         "		<description>what i'm up to lol. these are NOT my ramblings lmao</description>"
     ];
 
-	for (const entry of entries) {
-		xml.push(...[
-		'		<item>',
-		`			<title>${entry.text}</title>`,
-		`			<pubDate>${entry.createdAt.toUTCString()}</pubDate>`,
-		`			<guid isPermaLink="false">${entry.id}</guid>`,
-		'		</item>'
-		])
-	}
+    for (const entry of entries) {
+        xml.push(
+            ...[
+                '		<item>',
+                `			<title>${entry.text}</title>`,
+                `			<pubDate>${entry.createdAt.toUTCString()}</pubDate>`,
+                `			<guid isPermaLink="false">${entry.id}</guid>`,
+                '		</item>'
+            ]
+        );
+    }
 
-	xml.push(...[
-		'	</channel>',
-		'</rss>'
-	])
+    xml.push(...['	</channel>', '</rss>']);
 
-    return c.body(xml.join('\n'), 200, { "Content-Type": "application/xml; charset=UTF-8"});
+    return c.body(xml.join('\n'), 200, { 'Content-Type': 'application/xml; charset=UTF-8' });
 });
 
 export default statuses;

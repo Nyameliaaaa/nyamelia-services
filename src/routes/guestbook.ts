@@ -32,43 +32,47 @@ guestbook.post('/', async c => {
     }>();
 
     if (!body.message) {
-        c.status(422);
-
-        return c.json({
-            error: 'NO_MESSAGE',
-            description: 'A message is required in the guestbook'
-        });
+        return c.json(
+            {
+                error: 'NO_MESSAGE',
+                description: 'a message is required in the guestbook'
+            },
+            422
+        );
     }
 
     if (body.email && !isValidEmail(body.email)) {
-        c.status(422);
-
-        return c.json({
-            error: 'INVALID_EMAIL',
-            description: 'The email is not a valid email'
-        });
+        return c.json(
+            {
+                error: 'INVALID_EMAIL',
+                description: 'that email is not a valid email'
+            },
+            422
+        );
     }
 
     if (body.url) {
         try {
             new URL(body.url);
         } catch {
-            c.status(422);
-
-            return c.json({
-                error: 'INVALID_URL',
-                description: 'The URL is not a valid URL'
-            });
+            return c.json(
+                {
+                    error: 'INVALID_URL',
+                    description: 'that URL is not a valid URL'
+                },
+                422
+            );
         }
     }
 
     if (body.borderColor && !CATPPUCCIN_MACCHIATO_COLORS.includes(body.borderColor)) {
-        c.status(422);
-
-        return c.json({
-            error: 'INVALID_COLOR',
-            description: 'The border color is not a valid Catppuccin Macchiato color'
-        });
+        return c.json(
+            {
+                error: 'INVALID_COLOR',
+                description: 'the border color is not a valid Catppuccin Macchiato color'
+            },
+            422
+        );
     }
 
     const [entry] = await db
@@ -84,8 +88,7 @@ guestbook.post('/', async c => {
 
     await sendDiscordPacket<GuestbookEntryPacket>(c, { type: QueuedMessageType.GuestbookEntry, ...entry });
 
-    c.status(201);
-    return c.json({ success: true, id: entry.id });
+    return c.json({ success: true, id: entry.id }, 201);
 });
 
 guestbook.get('/:id', async c => {
@@ -106,12 +109,13 @@ guestbook.get('/:id', async c => {
     const entry = await db.selectDistinct(publicFields).from(guestbookEntries).where(eq(guestbookEntries.id, id));
 
     if (!entry.length) {
-        c.status(404);
-
-        return c.json({
-            error: 'ENTRY_NOT_FOUND',
-            description: 'That entry does not exist'
-        });
+        return c.json(
+            {
+                error: 'ENTRY_NOT_FOUND',
+                description: 'That entry does not exist'
+            },
+            404
+        );
     }
 
     return c.json(
@@ -124,16 +128,16 @@ guestbook.get('/:id', async c => {
 
 guestbook.post('/:id/report', async c => {
     const _id = c.req.param('id');
-
     const body = await c.req.json<ReportPacket>();
 
     if (!Number.isFinite(Number(_id))) {
-        c.status(422);
-
-        return c.json({
-            error: 'INVALID_ID',
-            description: 'The ID is not a number'
-        });
+        return c.json(
+            {
+                error: 'INVALID_ID',
+                description: 'the ID is not a number'
+            },
+            422
+        );
     }
 
     const id = Number(_id);
@@ -141,12 +145,13 @@ guestbook.post('/:id/report', async c => {
     const entry = await db.selectDistinct().from(guestbookEntries).where(eq(guestbookEntries.id, id));
 
     if (!entry.length) {
-        c.status(404);
-
-        return c.json({
-            error: 'ENTRY_NOT_FOUND',
-            description: 'That entry does not exist'
-        });
+        return c.json(
+            {
+                error: 'ENTRY_NOT_FOUND',
+                description: 'that entry does not exist'
+            },
+            404
+        );
     }
 
     await sendDiscordPacket<ReportPacket>(c, {

@@ -149,8 +149,7 @@ discord.post('/', discordVerify(env.DISCORD_PUBLIC_KEY), async c => {
         });
     }
 
-    c.status(422);
-    return c.json({ error: 'WHAT', description: "how'd this happen" });
+    return c.json({ error: 'UNKNOWN', description: "how'd this happen" }, 422);
 });
 
 discord.get('/pushCommands', async c => {
@@ -158,11 +157,11 @@ discord.get('/pushCommands', async c => {
     const appID = c.req.query('id');
 
     if (key !== c.env.DISCORD_PUBLIC_KEY) {
-        return c.body(null, 403);
+        return c.json({ error: 'MISSING_PARAMS', description: 'you forgot the publicKey' }, 403);
     }
 
     if (!appID) {
-        return c.body(null, 422);
+        return c.json({ error: 'MISSING_PARAMS', description: 'you forgot the appID' }, 422);
     }
 
     const rest = new REST({ version: '10' }).setToken(c.env.DISCORD_TOKEN);
@@ -182,7 +181,7 @@ discord.get('/pushCommands', async c => {
 
     await rest.put(Routes.applicationCommands(appID), { body: commands });
 
-    return c.body(null, 204);
+    return c.json({ success: true }, 202);
 });
 
 export default discord;
