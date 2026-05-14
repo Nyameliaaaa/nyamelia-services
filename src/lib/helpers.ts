@@ -31,6 +31,10 @@ export const getOrigin = (origin: string) => {
         return origin;
     }
 
+    if (/^https:\/\/[a-z0-9-]+\.trycloudflare\.com$/.test(origin)) {
+        return origin;
+    }
+
     return null;
 };
 
